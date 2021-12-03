@@ -6,7 +6,7 @@
 
 typedef tree_error_t error_t;
 
-static size_t N_ADD_NODES = 8;
+static size_t N_ADD_NODES = 16;
 
 error_t
 tree_construct(Tree *const p_tree, const size_t capacity)
@@ -25,8 +25,10 @@ tree_construct(Tree *const p_tree, const size_t capacity)
       return TREE_ERROR;
    
    p_tree->capacity = capacity;
-   p_tree->n_nodes  = 0;
-   p_tree->nodes    = nodes;
+   p_tree->size     = 0;
+   p_tree->root     = nodes;
+   p_tree->final    = nodes + capacity - 1;
+   p_tree->free     = nodes;
    
    return TREE_NO_ERROR;
 }
@@ -38,18 +40,18 @@ tree_destruct(Tree *const p_tree)
    #ifdef    TREE_ANTI_FOOL
    if (p_tree != nullptr)
    {
-      free(p_tree->nodes);
+      free(p_tree->root);
    
       p_tree->capacity = 0;
-      p_tree->n_nodes  = 0;
-      p_tree->nodes    = nullptr;
+      p_tree->size  = 0;
+      p_tree->root    = nullptr;
    }
    #else //  !TREE_ANTI_FOOL
-   free(p_tree->nodes);
+   free(p_tree->root);
    
    p_tree->capacity = 0;
-   p_tree->n_nodes  = 0;
-   p_tree->nodes    = nullptr;
+   p_tree->size  = 0;
+   p_tree->root    = nullptr;
    #endif // !TREE_ANTI_FOOL
 }
 
@@ -74,25 +76,24 @@ tree_add_node(Tree *const p_tree, const TreeNodeData *const p_data)
       return nullptr;
    #endif // TREE_ANTI_FOOL
    
-   if (p_tree->n_nodes == p_tree->capacity)
+   if (p_tree->free + 1 == p_tree->final)
    {
-      if (p_tree->capacity == TREE_MAX_CAPACITY)
+      if (p_tree->capacity + N_ADD_NODES > TREE_MAX_CAPACITY)
          return nullptr;
       
+      p_tree->final->daddy = (TreeNode *)calloc(N_ADD_NODES, sizeof(TreeNode));
+      assert(p_tree->final->daddy);
+      
       p_tree->capacity += N_ADD_NODES;
-      
-      if (p_tree->capacity > TREE_MAX_CAPACITY)
-         p_tree->capacity = TREE_MAX_CAPACITY;
-      
-      p_tree->nodes = (TreeNode *)realloc(p_tree->nodes, p_tree->capacity * sizeof(TreeNode));
-   
-      assert(p_tree->nodes);
+      p_tree->free      = p_tree->final->daddy;
+      p_tree->final     = p_tree->final->daddy + N_ADD_NODES - 1;
    }
    
-   p_tree->n_nodes += 1;
-   tree_fill_node((TreeNode *) p_tree->nodes + p_tree->n_nodes - 1, p_data);
+   tree_fill_node(p_tree->free, p_data);
+   p_tree->size += 1;
+   p_tree->free += 1;
    
-   return (TreeNode *)p_tree->nodes + p_tree->n_nodes - 1;
+   return p_tree->free - 1;
 }
 
 error_t

@@ -24,8 +24,10 @@ struct TreeNode
 struct Tree
 {
    size_t    capacity;
-   size_t    n_nodes;
-   TreeNode *nodes;
+   size_t    size;
+   TreeNode *root;
+   TreeNode *final;
+   TreeNode *free;
 };
 
 const tree_error_t TREE_NO_ERROR =  0;

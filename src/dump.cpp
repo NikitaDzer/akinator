@@ -71,27 +71,29 @@ visit_node(const TreeNode *const p_node)
            "\t\tnode_%p[label = \"%s\"]\n"
            "\t\tnode_%p[label = \"%s\"]\n"
            "\t\tnode_%p[label = \"%s\"]\n"
-           "\t\tnode_%p -> node_%p[label = \"Yeap\", color = \"#DDDDDD\"]\n"
-           "\t\tnode_%p -> node_%p[label = \"Nope\", color = \"#DDDDDD\"]\n",
+           "\t\tnode_%p -> node_%p[label = \"yeap\" fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n"
+           "\t\tnode_%p -> node_%p[label = \"nope\" fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n",
            p_node, p_node->data.string,
            p_node->yeapSon, p_node->yeapSon->data.string,
            p_node->nopeSon, p_node->nopeSon->data.string,
            p_node, p_node->yeapSon,
            p_node, p_node->nopeSon);
    
+   
    if (p_node->yeapSon->yeapSon != nullptr)
-   {
       visit_node(p_node->yeapSon);
+   
+   if (p_node->nopeSon->yeapSon != nullptr)
       visit_node(p_node->nopeSon);
-   }
 }
 
 static void
 visit_tree(const Tree *const p_tree)
 {
    assert(p_tree);
+   assert(p_tree->root);
    
-   visit_node(&p_tree->nodes[0]);
+   visit_node(&p_tree->root[0]);
 }
 
 static void
@@ -112,7 +114,7 @@ tree_to_digraph(const Tree *const p_tree)
            "\tgraph[dpi = 250, splines = polyline, nodesep = 0.3, ranksep = 1, rankdir = TB]               \n"
            "\tnode[shape = record, style = \"filled\", penwidth = 2, color = \"#333333\", margin = 0.04,   \n"
            "\tfontcolor = \"white\", fontsize = 8, fillcolor = \"#666666\", fontname = \"Consolas\"]       \n"
-           "\tedge[arrowsize = 0.7, style = solid, penwidth = 1.1, color = \"#AAAAAA\"]                    \n");
+           "\tedge[arrowsize = 0.7, style = solid, penwidth = 1.1, color = \"#CCCCCC\"]                    \n");
    
    visit_tree(p_tree);
    
@@ -144,15 +146,15 @@ tree_dump(const Tree *const p_tree)
            "\t\t<div class = 'tree'>                                    \n"
            "\t\t<pre>Tree address:    %p</pre>                          \n"
            "\t\t<pre>NODS address:    %p</pre>                          \n"
-           "\t\t<pre>Number of nodes: %zu</pre>                         \n"
+           "\t\t<pre>Number of root: %zu</pre>                         \n"
            "\t\t<pre>Capacity:        %zu</pre>                         \n"
            "\t\t</div>                                                  \n"
            "\t\t<div class = 'tree_img'>                                \n"
            "\t\t<img src = \"%s\" width = 100%>                         \n"
            "\t\t</div>                                                  \n",
            p_tree,
-           p_tree->nodes,
-           p_tree->n_nodes,
+           p_tree->root,
+           p_tree->size,
            p_tree->capacity,
            tree_png_path);
    
