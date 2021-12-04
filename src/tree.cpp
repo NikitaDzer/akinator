@@ -126,14 +126,3 @@ tree_relate_nodes(TreeNode *const p_daddy, TreeNode **const p_daddy_son, TreeNod
    
    return TREE_NO_ERROR;
 }
-
-error_t
-tree_visit(Tree *const p_tree)
-{
-   #ifdef    TREE_ANTI_FOOL
-   if (p_tree == nullptr)
-      return TREE_ERROR;
-   #endif // TREE_ANTI_FOOL
-   
-   return TREE_NO_ERROR;
-}

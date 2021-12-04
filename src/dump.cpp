@@ -63,40 +63,6 @@ dump_controller()
 }
 
 static void
-visit_node(const TreeNode *const p_node)
-{
-   assert(p_node);
-   
-   fprintf(dotfile,
-           "\t\tnode_%p[label = \"%s\"]\n"
-           "\t\tnode_%p[label = \"%s\"]\n"
-           "\t\tnode_%p[label = \"%s\"]\n"
-           "\t\tnode_%p -> node_%p[label = \"yeap\" fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n"
-           "\t\tnode_%p -> node_%p[label = \"nope\" fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n",
-           p_node, p_node->data.string,
-           p_node->yeapSon, p_node->yeapSon->data.string,
-           p_node->nopeSon, p_node->nopeSon->data.string,
-           p_node, p_node->yeapSon,
-           p_node, p_node->nopeSon);
-   
-   
-   if (p_node->yeapSon->yeapSon != nullptr)
-      visit_node(p_node->yeapSon);
-   
-   if (p_node->nopeSon->yeapSon != nullptr)
-      visit_node(p_node->nopeSon);
-}
-
-static void
-visit_tree(const Tree *const p_tree)
-{
-   assert(p_tree);
-   assert(p_tree->root);
-   
-   visit_node(p_tree->root);
-}
-
-static void
 tree_to_digraph(const Tree *const p_tree)
 {
    assert(p_tree);

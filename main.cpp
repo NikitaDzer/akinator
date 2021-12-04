@@ -9,13 +9,9 @@ int main()
    Tree tree = {0};
 
    tree_construct(&tree, 10);
-   database_to_tree(DATABASE_DEFAULT_PATH, &tree);
 
    akinator(&tree);
    
-   tree_to_database(DATABASE_DEFAULT_PATH, &tree);
-   
-   tree_dump(&tree);
    tree_destruct(&tree);
    
    return 0;
