@@ -93,7 +93,7 @@ visit_tree(const Tree *const p_tree)
    assert(p_tree);
    assert(p_tree->root);
    
-   visit_node(&p_tree->root[0]);
+   visit_node(p_tree->root);
 }
 
 static void
@@ -102,7 +102,6 @@ tree_to_digraph(const Tree *const p_tree)
    assert(p_tree);
    
    dotfile = fopen(TREE_DOTFILE_PATH, "w");
-   
    assert(dotfile);
    
    fprintf(dotfile,
@@ -116,7 +115,46 @@ tree_to_digraph(const Tree *const p_tree)
            "\tfontcolor = \"white\", fontsize = 8, fillcolor = \"#666666\", fontname = \"Consolas\"]       \n"
            "\tedge[arrowsize = 0.7, style = solid, penwidth = 1.1, color = \"#CCCCCC\"]                    \n");
    
-   visit_tree(p_tree);
+   const TreeNode *p_node = p_tree->root;
+   
+   fprintf(dotfile,
+           "\t\tnode_%p[label = \"%s\"]\n",
+           p_node, p_node->data.string);
+   p_node = p_node->yeapSon;
+   
+   for (size_t i = 1; i < p_tree->size; i++)
+   {
+      fprintf(dotfile,
+              "\t\tnode_%p[label = \"%s\"]\n",
+              p_node, p_node->data.string);
+      
+      if (p_node->daddy->yeapSon == p_node)
+         fprintf(dotfile,
+                 "\t\tnode_%p -> node_%p[label = \"yeap\" fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n",
+                 p_node->daddy, p_node);
+      else
+         fprintf(dotfile,
+                 "\t\tnode_%p -> node_%p[label = \"nope\" fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n",
+                 p_node->daddy, p_node);
+      
+      if (i != p_tree->size - 1)
+      {
+         if (p_node->yeapSon == nullptr)
+         {
+            if (p_node->daddy->yeapSon == p_node)
+               p_node = p_node->daddy->nopeSon;
+            else
+            {
+               while (p_node->daddy->nopeSon == p_node)
+                  p_node = p_node->daddy;
+         
+               p_node = p_node->daddy->nopeSon;
+            }
+         }
+         else
+            p_node = p_node->yeapSon;
+      }
+   }
    
    fprintf(dotfile, "}\n");
    assert(fclose(dotfile) == 0);
@@ -144,16 +182,20 @@ tree_dump(const Tree *const p_tree)
    fprintf(stream,
            "\t\t<hr width = '100%'>                                     \n"
            "\t\t<div class = 'tree'>                                    \n"
-           "\t\t<pre>Tree address:    %p</pre>                          \n"
-           "\t\t<pre>NODS address:    %p</pre>                          \n"
-           "\t\t<pre>Number of root: %zu</pre>                         \n"
-           "\t\t<pre>Capacity:        %zu</pre>                         \n"
+           "\t\t<pre>Tree  address:  %p</pre>                           \n"
+           "\t\t<pre>Root  address:  %p</pre>                           \n"
+           "\t\t<pre>Free  address:  %p</pre>                           \n"
+           "\t\t<pre>Final address:  %p</pre>                           \n"
+           "\t\t<pre>Size:           %zu</pre>                          \n"
+           "\t\t<pre>Capacity:       %zu</pre>                          \n"
            "\t\t</div>                                                  \n"
            "\t\t<div class = 'tree_img'>                                \n"
            "\t\t<img src = \"%s\" width = 100%>                         \n"
            "\t\t</div>                                                  \n",
            p_tree,
            p_tree->root,
+           p_tree->free,
+           p_tree->final,
            p_tree->size,
            p_tree->capacity,
            tree_png_path);

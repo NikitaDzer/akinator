@@ -27,8 +27,8 @@ tree_construct(Tree *const p_tree, const size_t capacity)
    p_tree->capacity = capacity;
    p_tree->size     = 0;
    p_tree->root     = nodes;
-   p_tree->final    = nodes + capacity - 1;
    p_tree->free     = nodes;
+   p_tree->final    = nodes + capacity - 1;
    
    return TREE_NO_ERROR;
 }
@@ -40,18 +40,32 @@ tree_destruct(Tree *const p_tree)
    #ifdef    TREE_ANTI_FOOL
    if (p_tree != nullptr)
    {
+      while (p_tree->final->daddy != nullptr)
+      {
+         free(p_tree->final + 1 - N_ADD_NODES);
+         p_tree->final = p_tree->final->daddy;
+      }
       free(p_tree->root);
-   
+      
       p_tree->capacity = 0;
-      p_tree->size  = 0;
-      p_tree->root    = nullptr;
+      p_tree->size     = 0;
+      p_tree->root     = nullptr;
+      p_tree->free     = nullptr;
+      p_tree->final    = nullptr;
    }
    #else //  !TREE_ANTI_FOOL
+   while (p_tree->final->daddy != nullptr)
+   {
+      free(p_tree->final + 1 - N_ADD_NODES);
+      p_tree->final = p_tree->final->daddy;
+   }
    free(p_tree->root);
    
    p_tree->capacity = 0;
-   p_tree->size  = 0;
-   p_tree->root    = nullptr;
+   p_tree->size     = 0;
+   p_tree->root     = nullptr;
+   p_tree->free     = nullptr;
+   p_tree->final    = nullptr;
    #endif // !TREE_ANTI_FOOL
 }
 
@@ -81,12 +95,15 @@ tree_add_node(Tree *const p_tree, const TreeNodeData *const p_data)
       if (p_tree->capacity + N_ADD_NODES > TREE_MAX_CAPACITY)
          return nullptr;
       
-      p_tree->final->daddy = (TreeNode *)calloc(N_ADD_NODES, sizeof(TreeNode));
-      assert(p_tree->final->daddy);
+      TreeNode *const p_allocated = (TreeNode *)calloc(N_ADD_NODES, sizeof(TreeNode));
+      TreeNode *const p_prevFinal = p_tree->final;
       
-      p_tree->capacity += N_ADD_NODES;
-      p_tree->free      = p_tree->final->daddy;
-      p_tree->final     = p_tree->final->daddy + N_ADD_NODES - 1;
+      assert(p_allocated);
+      
+      p_tree->capacity     += N_ADD_NODES;
+      p_tree->free          = p_allocated;
+      p_tree->final         = p_allocated + N_ADD_NODES - 1;
+      p_tree->final->daddy  = p_prevFinal;
    }
    
    tree_fill_node(p_tree->free, p_data);

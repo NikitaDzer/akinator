@@ -69,7 +69,8 @@ get_input(char *const buffer)
    if (ferror(stdin))
       return;
    
-   input[input_len = strlen(input) - 1] = '\0';
+   input_len = strlen(input);
+   input[--input_len] = '\0';
    memset(buffer, 0, AKINATOR_BUFFER_SIZE);
    
    iconv_t descriptor = iconv_open("UTF-8", "CP1251");
@@ -99,6 +100,7 @@ get_akinator_mode()
       if (strncmp(buffer, "выйти", sizeof("выйти")) == 0)
          return UserResponse::QUIT;
       
+      printf("Не понял тебя. Давай по новой.\n");
    }  while (true);
 }
 
@@ -140,14 +142,19 @@ akinator_greetings()
 static void
 akinator_quit()
 {
-   printf("Ну и пиздуй отсюда!\n");
+   printf("Круто повеселись. Удачи, Бро!\n");
+}
+
+static inline bool
+need_exit(const char *const buffer)
+{
+   return strncmp(buffer, "выйти", sizeof("выйти")) == 0;
 }
 
 static void
 akinator_guess(Tree *const p_tree)
 {
    assert(p_tree);
-   assert(p_tree->root);
    
    char buffer[AKINATOR_BUFFER_SIZE] = "";
    TreeNode *p_node = nullptr;
@@ -161,8 +168,9 @@ akinator_guess(Tree *const p_tree)
          printf("%s?\n", p_node->data.string);
          get_input(buffer);
    
-         if (strncmp(buffer, "выйти", sizeof("выйти")) == 0)
+         if (need_exit(buffer))
             return;
+         
          if (strncmp(buffer, "да", sizeof("да")) == 0)
             p_node = p_node->yeapSon;
          else if (strncmp(buffer, "нет", sizeof("нет")) == 0)
@@ -176,6 +184,9 @@ akinator_guess(Tree *const p_tree)
          printf("Ты загадал: %s. Верно?\n", p_node->data.string);
          get_input(buffer);
          
+         if (need_exit(buffer))
+            return;
+         
          if (strncmp(buffer, "да", sizeof("да")) == 0)
          {
             printf("СЮДА!\n");
@@ -185,6 +196,9 @@ akinator_guess(Tree *const p_tree)
                printf("Желаешь продолжить?\n");
                get_input(buffer);
    
+               if (need_exit(buffer))
+                  return;
+               
                if (strncmp(buffer, "да", sizeof("да")) == 0)
                   break;
                if (strncmp(buffer, "нет", sizeof("нет")) == 0)
@@ -205,6 +219,195 @@ akinator_guess(Tree *const p_tree)
       }
    }
 }
+
+static void
+akinator_define(Tree *const p_tree)
+{
+   assert(p_tree);
+   
+   char buffer[AKINATOR_BUFFER_SIZE] = "";
+   bool is_path_found     = false;
+   const TreeNode *p_node = nullptr;
+   
+   while (true)
+   {
+      while (true)
+      {
+         printf("О ком хочешь узнать?\n");
+         get_input(buffer);
+      
+         if (need_exit(buffer))
+            return;
+         
+         p_node = p_tree->root;
+         
+         for (size_t i = 0; i < p_tree->size; i++)
+         {
+            if (p_node->yeapSon == nullptr)
+            {
+               if (strcmp(buffer, p_node->data.string) == 0)
+               {
+                  is_path_found = true;
+                  break;
+               }
+            
+               if (i != p_tree->size - 1)
+               {
+                  if (p_node->daddy->yeapSon == p_node)
+                     p_node = p_node->daddy->nopeSon;
+                  else
+                  {
+                     while (p_node->daddy->nopeSon == p_node)
+                        p_node = p_node->daddy;
+      
+                     p_node = p_node->daddy->nopeSon;
+                  }
+               }
+            }
+            else
+               p_node = p_node->yeapSon;
+         }
+   
+         if (is_path_found)
+            break;
+         
+         printf("Не обессуй, но я не смог найти твоего клиента. Повтори ввод.\n");
+      }
+   
+      printf("%s", buffer);
+   
+      if (p_node->daddy->nopeSon == p_node)
+         printf(" не");
+      printf(" %s", p_node->daddy->data.string);
+      
+      p_node = p_node->daddy;
+      
+      while (p_node->daddy->daddy != nullptr)
+      {
+         printf(",");
+         
+         if (p_node->daddy->nopeSon == p_node)
+            printf(" не");
+         printf(" %s", p_node->daddy->data.string);
+         
+         p_node = p_node->daddy;
+      }
+      
+      printf(" и");
+   
+      if (p_node->daddy->nopeSon == p_node)
+         printf(" не");
+      printf(" %s.\n", p_node->daddy->data.string);
+      
+      while (true)
+      {
+         printf("Желаешь продолжить?\n");
+         get_input(buffer);
+         
+         if (need_exit(buffer))
+            return;
+         
+         if (strncmp(buffer, "да", sizeof("да")) == 0)
+            break;
+         if (strncmp(buffer, "нет", sizeof("нет")) == 0)
+            return;
+         
+         printf("Блин, не понял.\n");
+      }
+   }
+}
+
+//static void
+//akinator_compare(Tree *const p_tree)
+//{
+//   assert(p_tree);
+//
+//   char who_1[AKINATOR_BUFFER_SIZE] = "";
+//   char who_2[AKINATOR_BUFFER_SIZE] = "";
+//   bool is_path_found     = false;
+//   const TreeNode *p_node = nullptr;
+//
+//   while (true)
+//   {
+//      while (true)
+//      {
+//         printf("Кого с кем хочешь сравнить?\n");
+//         get_input(buffer);
+//
+//         p_node = p_tree->root;
+//
+//         for (size_t i = 0; i < p_tree->size; i++)
+//         {
+//            if (p_node->yeapSon == nullptr)
+//            {
+//               if (strcmp(buffer, p_node->data.string) == 0)
+//               {
+//                  is_path_found = true;
+//                  break;
+//               }
+//
+//               if (i != p_tree->size - 1)
+//               {
+//                  if (p_node->daddy->yeapSon == p_node)
+//                     p_node = p_node->daddy->nopeSon;
+//                  else
+//                  {
+//                     while (p_node->daddy->nopeSon == p_node)
+//                        p_node = p_node->daddy;
+//
+//                     p_node = p_node->daddy->nopeSon;
+//                  }
+//               }
+//            }
+//            else
+//               p_node = p_node->yeapSon;
+//         }
+//
+//         if (is_path_found)
+//            break;
+//
+//         printf("Не обессуй, но я не смог найти твоего клиента. Повтори ввод.\n");
+//      }
+//
+//      printf("%s", buffer);
+//
+//      if (p_node->daddy->nopeSon == p_node)
+//         printf(" не");
+//      printf(" %s", p_node->daddy->data.string);
+//
+//      p_node = p_node->daddy;
+//
+//      while (p_node->daddy->daddy != nullptr)
+//      {
+//         printf(",");
+//
+//         if (p_node->daddy->nopeSon == p_node)
+//            printf(" не");
+//         printf(" %s", p_node->daddy->data.string);
+//
+//         p_node = p_node->daddy;
+//      }
+//
+//      printf(" и");
+//
+//      if (p_node->daddy->nopeSon == p_node)
+//         printf(" не");
+//      printf(" %s.\n", p_node->daddy->data.string);
+//
+//      while (true)
+//      {
+//         printf("Желаешь продолжить?\n");
+//         get_input(buffer);
+//
+//         if (strncmp(buffer, "да", sizeof("да")) == 0)
+//            break;
+//         if (strncmp(buffer, "нет", sizeof("нет")) == 0)
+//            return;
+//
+//         printf("Блин, не понял.\n");
+//      }
+//   }
+//}
 
 error_t
 database_to_tree(const char *const database_path, Tree *const p_tree)
@@ -231,8 +434,8 @@ database_to_tree(const char *const database_path, Tree *const p_tree)
    sscanf(data, "%zu", &n_nodes);
    
    TreeNodeData  latestNode_data = {};
-   TreeNode     *p_currentDaddy  = nullptr;
    TreeNode     *p_latestNode    = nullptr;
+   TreeNode     *p_currentDaddy  = nullptr;
    
    string                 = find_string(data);
    latestNode_data.string = string + 1;
@@ -256,6 +459,7 @@ database_to_tree(const char *const database_path, Tree *const p_tree)
             p_currentDaddy = p_currentDaddy->daddy;
    }
    
+   string[strlen(string) - 1] = '\0';
    
    return TREE_NO_ERROR;
 }
@@ -266,10 +470,9 @@ tree_to_database(const char *const database_path, Tree *const p_tree)
    assert(database_path);
    assert(p_tree);
    
-   FILE     *database = nullptr;
+   FILE     *database = fopen(database_path, "w");
    TreeNode *p_node   = p_tree->root;
    
-   database = fopen(database_path, "w");
    assert(database);
    
    fprintf(database, "%zu\n", p_tree->size);
@@ -296,7 +499,6 @@ tree_to_database(const char *const database_path, Tree *const p_tree)
          p_node = p_node->yeapSon;
       }
    }
-   
    assert(fclose(database) == 0);
    
    return TREE_NO_ERROR;
@@ -310,8 +512,8 @@ akinator(Tree *const p_tree)
    SetConsoleCP(1251);
    SetConsoleOutputCP(65001);
    
-   char buffer[AKINATOR_BUFFER_SIZE] = "";
    UserResponse akinator_mode = UserResponse::SHIT;
+   char buffer[AKINATOR_BUFFER_SIZE] = "";
    
    akinator_greetings();
    
@@ -326,14 +528,25 @@ akinator(Tree *const p_tree)
             akinator_guess(p_tree);
             break;
          }
-
+         
+         case UserResponse::MODE_DEFINE:
+         {
+            akinator_define(p_tree);
+            break;
+         }
+         
+//         case UserResponse::MODE_COMPARE:
+//         {
+//            akinator_compare(p_tree);
+//            break;
+//         }
+         
          default: break;
       }
 
    } while (akinator_mode != UserResponse::QUIT);
    
    akinator_quit();
-   
    
    return TREE_NO_ERROR;
 }

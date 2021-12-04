@@ -26,8 +26,8 @@ struct Tree
    size_t    capacity;
    size_t    size;
    TreeNode *root;
-   TreeNode *final;
    TreeNode *free;
+   TreeNode *final;
 };
 
 const tree_error_t TREE_NO_ERROR =  0;
