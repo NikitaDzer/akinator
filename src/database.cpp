@@ -1,12 +1,6 @@
-//
-// Created by User on 04.12.2021.
-//
-
 #include <cctype>
 #include "../include/database.h"
 #include "../include/tree.h"
-
-typedef tree_error_t error_t;
 
 static long
 get_file_size(FILE *const file)
@@ -48,7 +42,7 @@ chop_strings(char *const start)
          *ptr = '\0';
 }
 
-error_t
+void
 database_to_tree(const char *const database_path, Tree *const p_tree)
 {
    assert(database_path);
@@ -89,9 +83,9 @@ database_to_tree(const char *const database_path, Tree *const p_tree)
       p_latestNode           = tree_add_node(p_tree, &latestNode_data);
       
       if (p_currentDaddy->yeapSon == nullptr)
-         tree_relate_nodes(p_currentDaddy, &p_currentDaddy->yeapSon, p_latestNode);
+         tree_relate(p_currentDaddy, p_latestNode, &p_currentDaddy->yeapSon);
       else
-         tree_relate_nodes(p_currentDaddy, &p_currentDaddy->nopeSon, p_latestNode);
+         tree_relate(p_currentDaddy, p_latestNode, &p_currentDaddy->nopeSon);
       
       if (*string == '?')
          p_currentDaddy = p_latestNode;
@@ -101,11 +95,9 @@ database_to_tree(const char *const database_path, Tree *const p_tree)
    }
    
    free(data);
-   
-   return TREE_NO_ERROR;
 }
 
-error_t
+void
 tree_to_database(const char *const database_path, Tree *const p_tree)
 {
    assert(database_path);
@@ -141,6 +133,4 @@ tree_to_database(const char *const database_path, Tree *const p_tree)
       }
    }
    assert(fclose(database) == 0);
-   
-   return TREE_NO_ERROR;
 }

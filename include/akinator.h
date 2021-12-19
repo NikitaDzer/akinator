@@ -4,9 +4,9 @@
 #include "config.h"
 #include "tree.h"
 
-const size_t AKINATOR_BUFFER_SIZE      = 1024;
+const size_t AKINATOR_BUFFER_SIZE = 1024;
 
-tree_error_t
+void
 akinator(Tree *const p_tree);
 
 #endif // AKINATOR_H

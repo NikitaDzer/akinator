@@ -4,8 +4,6 @@
 #include "../include/database.h"
 #include "../include/dump.h"
 
-typedef tree_error_t error_t;
-
 enum AkinatorMode
 {
    SHIT    = 0,
@@ -99,7 +97,6 @@ static void
 add_variant(Tree *const p_tree, TreeNode *const p_daddy, TreeNode *const p_transferNode)
 {
    TreeNode **p_daddy_son = nullptr;
-   TreeNode  *p_son       = nullptr;
    
    const TreeNodeData whoNode_data      = {
            .string = (char *)calloc(AKINATOR_BUFFER_SIZE * 2, sizeof(char))
@@ -125,9 +122,9 @@ add_variant(Tree *const p_tree, TreeNode *const p_daddy, TreeNode *const p_trans
    else
       p_daddy_son = &p_daddy->nopeSon;
    
-   tree_relate_nodes(p_daddy, p_daddy_son, tree_add_node(p_tree, &questionNode_data));
-   tree_relate_nodes(*p_daddy_son, &(*p_daddy_son)->yeapSon, tree_add_node(p_tree, &whoNode_data));
-   tree_relate_nodes(*p_daddy_son, &(*p_daddy_son)->nopeSon, p_transferNode);
+   tree_relate(p_daddy, tree_add_node(p_tree, &questionNode_data), p_daddy_son);
+   tree_relate(*p_daddy_son, tree_add_node(p_tree, &whoNode_data), &(*p_daddy_son)->yeapSon);
+   tree_relate(*p_daddy_son, p_transferNode, &(*p_daddy_son)->nopeSon);
 }
 
 static const TreeNode*
@@ -453,7 +450,7 @@ akinator_compare(Tree *const p_tree)
    }
 }
 
-error_t
+void
 akinator(Tree *const p_tree)
 {
    assert(p_tree);
@@ -461,12 +458,10 @@ akinator(Tree *const p_tree)
    SetConsoleCP(1251);
    SetConsoleOutputCP(65001);
    
-   char buffer[AKINATOR_BUFFER_SIZE] = "";
-   AkinatorMode akinator_mode = AkinatorMode::SHIT;
-   
    database_to_tree(DATABASE_DEFAULT_PATH, p_tree);
    akinator_greetings();
    
+   AkinatorMode akinator_mode = AkinatorMode::SHIT;
    do
    {
       akinator_mode = get_akinator_mode();
@@ -501,6 +496,4 @@ akinator(Tree *const p_tree)
    tree_dump(p_tree);
    
    free_data(p_tree);
-   
-   return TREE_NO_ERROR;
 }

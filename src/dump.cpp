@@ -96,11 +96,11 @@ tree_to_digraph(const Tree *const p_tree)
       
       if (p_node->daddy->yeapSon == p_node)
          fprintf(dotfile,
-                 "\t\tnode_%p -> node_%p[label = \"yeap\" fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n",
+                 "\t\tnode_%p -> node_%p[fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n",
                  p_node->daddy, p_node);
       else
          fprintf(dotfile,
-                 "\t\tnode_%p -> node_%p[label = \"nope\" fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n",
+                 "\t\tnode_%p -> node_%p[fontcolor = \"#BBBBBB\" fontsize = \"8\"]\n",
                  p_node->daddy, p_node);
       
       if (i != p_tree->size - 1)

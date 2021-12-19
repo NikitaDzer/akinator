@@ -6,13 +6,9 @@
 
 int main()
 {
-   Tree tree = {0};
-
-   tree_construct(&tree, 10);
-
-   akinator(&tree);
-   
-   tree_destruct(&tree);
+   Tree *const p_tree = tree_construct();
+   akinator(p_tree);
+   tree_destruct(p_tree);
    
    return 0;
 }
